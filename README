@@ -1,0 +1,26 @@
+Pure Python i2c module for the Raspberry Pi.
+
+INSTRUCTIONS
+1. Install the i2c-bcm2708 kernel module. The newest version of this
+   driver is required to perform combined transactions.
+   Use 'lsmod' to list modules, 'modprobe' to load modules.
+   May need to edit the "/etc/modprobe.d/raspi-blacklist.conf" file.
+2. Install the i2c-dev kernel module. This creates the "/dev/i2c-x"
+   device files used by this module to access the i2c busses.
+3. Run the module and it will show which i2c busses it can access.
+4. Run the module with the bus number as a parameter it will will
+   perform a scan similar to the "i2cdetect" command.
+   Bus 0 is typically used with the camera module on S5.
+   Bus 1 is available on the GPIO Connector.
+   Bus 2 is not accessible (permanantly wired for HDMI).
+
+For more help:
+>>> import i2cdev
+>>> help(i2cdev)
+   
+The I2C subsystem in Linux is documented very well at: 
+    https://i2c.wiki.kernel.org/index.php/Main_Page
+
+version 1.0 - cbeytas - June 23, 2013
+
+Tested with Python 2.7.1 and Python 3.2.3
