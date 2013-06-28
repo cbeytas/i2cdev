@@ -286,7 +286,7 @@ class I2C:
 # ----------------------------------------------------------------------
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) == 1:
+    if len(sys.argv) <= 1:
         # No Arguments: Print list of buses available
         print("Available I2C buses:")
         num = 0
@@ -306,13 +306,13 @@ if __name__ == "__main__":
             bus = I2C(int(sys.argv[1]))
         except (ValueError, IOError) as e:
             print(e)
-            print("Cannot open /dev/i2c-%d" % num)
+            print("Cannot open /dev/i2c-%s" % sys.argv[1])
             sys.exit(1)
         print("Devices on bus /dev/%s (%s)" % (bus.device, bus.name))
         ## Scan valid I2C 7-bit address range, avoiding invalid addresses:
         ## (0-2=Different bus formats, 120-127=Reserved/10bit addresses)
         found = []
-        for addr in range (3, 119):
+        for addr in range(3, 120):
             try:
                 ## Taken from i2cdetect.c - Do not perform write operations on
                 ## addresses that might contain EEPROMs to avoid corruption.
