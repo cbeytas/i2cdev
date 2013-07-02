@@ -1,6 +1,6 @@
 # ======================================================================
-# i2cdev.py - I2C module to perform I2C operations using i2c-dev module.
-#             Written for the Raspberry Pi running Raspbian linux.
+# i2cdev.py - I2C module to perform I2C operations using the i2c device
+#             files in /dev. Written for the Raspberry Pi.
 #
 # Requires that the i2c-bcm2708 kernel module is installed. Check with
 # the 'lsmod' command and load with the 'modprobe' command. The newest
@@ -60,6 +60,8 @@ FUNCS = {"I2C_FUNC_I2C"                     : 0x00000001,
          "I2C_FUNC_SMBUS_BLOCK_DATA"        : 0x00300000,
          "I2C_FUNC_SMBUS_I2C_BLOCK"         : 0x00C00000,}
 # Defined IOCTLs
+I2C_RETRIES = 0x0701    # Number of times to retry a transfer (not used)
+I2C_TIMEOUT = 0x0702    # Sets timeout in units of 10ms (not used)
 I2C_SLAVE = 0x0703      # Change slave address (not used)
 I2C_TENBIT = 0x0704     # 10-bit addressing (not used)
 I2C_FUNCS = 0x0705      # Used by get_funcs() method
@@ -136,6 +138,19 @@ class I2C:
     def set_addr(self, addr):
         '''Sets the slave address used for transactions.'''
         self.addr = int(addr)
+
+    def set_timeout(self, timeout):
+        '''Sets the I2C timeout using the I2C_TIMEOUT IOCTL.
+
+        'timeout' is specified in units of 10ms.
+        Note: Requires newest driver to support.
+        Will raise IOError if the I2C_TIMEOUT ioctl call fails.
+        '''
+        if self._dev is None:
+            raise IOError("Device not open")
+        # Attempt to perform I2C_TIMEOUT ioctl (allow IOError to be raised).
+        ret = fcntl.ioctl(self._dev.fileno(), I2C_TIMEOUT, timeout)
+        return ret
 
     def read(self, nRead, addr=None):
         '''Reads a number of bytes from the slave address.
@@ -311,6 +326,8 @@ if __name__ == "__main__":
         print("Devices on bus /dev/%s (%s)" % (bus.device, bus.name))
         ## Scan valid I2C 7-bit address range, avoiding invalid addresses:
         ## (0-2=Different bus formats, 120-127=Reserved/10bit addresses)
+        ## NOTE: If the SDA line is being held LOW, it will appear that
+        ##       devices are present at all slave addresses.
         found = []
         for addr in range(3, 120):
             try:
